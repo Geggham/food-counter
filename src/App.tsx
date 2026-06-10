@@ -71,15 +71,18 @@ ${people}
 💰 Grand Total: ${grandTotal} AMD
 `;
 
-      const response = await fetch("http://localhost:3001/send-order", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        "https://food-order-backend-u43c.onrender.com/send-order",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            message,
+          }),
         },
-        body: JSON.stringify({
-          message,
-        }),
-      });
+      );
 
       if (!response.ok) {
         throw new Error("Failed to send");
