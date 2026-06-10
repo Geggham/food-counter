@@ -84,14 +84,20 @@ ${people}
         },
       );
 
+      const data = await response.json();
+
+      console.log("STATUS:", response.status);
+      console.log("RESPONSE:", data);
+
       if (!response.ok) {
-        throw new Error("Failed to send");
+        alert(`❌ ${JSON.stringify(data)}`);
+        throw new Error(data.error || "Failed to send");
       }
 
       alert("✅ Message sent to Telegram");
     } catch (error) {
-      console.error(error);
-      alert("❌ Failed to send message");
+      console.error("SEND ERROR:", error);
+      alert(`❌ ${error}`);
     } finally {
       setLoading(false);
     }
