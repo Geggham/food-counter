@@ -1,20 +1,22 @@
 import { useMemo, useState } from "react";
 
 const employees = [
-  "Gor",
-  "Ruzan",
-  "Lara",
-  "Sergo",
   "Gegham",
+  "Sergo",
   "Armen",
+  "Gor",
   "Alex",
-  "Koryun",
+  "Anna",
   "Agnes",
+  "Lara",
+  "Ruzan",
+  "Koryun",
   "Mko",
 ];
 
 function App() {
   const [delivery, setDelivery] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const [orders, setOrders] = useState<Record<string, number>>(
     employees.reduce(
@@ -40,11 +42,63 @@ function App() {
 
   const grandTotal = totalFood + delivery;
 
+  const sendToTelegram = async () => {
+    try {
+      setLoading(true);
+
+      const people = employees
+        .filter((person) => orders[person] > 0)
+        .map((person) => {
+          const food = orders[person];
+          const total = food + deliveryPerPerson;
+
+          return `👤 ${person}
+🍔 Food: ${food} AMD
+🚚 Delivery: ${Math.round(deliveryPerPerson)} AMD
+💰 Total: ${Math.round(total)} AMD`;
+        })
+        .join("\n\n");
+
+      const message = `
+🍔 FOOD ORDER
+
+${people}
+
+━━━━━━━━━━
+
+🍽 Food Total: ${totalFood} AMD
+🚚 Delivery: ${delivery} AMD
+💰 Grand Total: ${grandTotal} AMD
+`;
+
+      const response = await fetch("http://localhost:3001/send-order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to send");
+      }
+
+      alert("✅ Message sent to Telegram");
+    } catch (error) {
+      console.error(error);
+      alert("❌ Failed to send message");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-100 p-8">
       <div className="mx-auto max-w-7xl">
         <h1 className="mb-8 text-center text-4xl font-bold text-slate-800">
-          Order Counter
+          🍔 Order Counter
         </h1>
 
         <div className="grid gap-6 lg:grid-cols-2">
@@ -162,6 +216,14 @@ function App() {
                 {Math.round(deliveryPerPerson)} AMD
               </div>
             </div>
+
+            <button
+              onClick={sendToTelegram}
+              disabled={loading}
+              className="mt-5 w-full rounded-2xl bg-blue-600 py-4 text-lg font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {loading ? "Sending..." : "📨 Send To Telegram"}
+            </button>
           </div>
         </div>
       </div>
